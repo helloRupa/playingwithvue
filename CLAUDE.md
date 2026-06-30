@@ -57,7 +57,7 @@ partial or pre-approval work.
 - Do not begin coding before I approve the plan.
 - Do not mark work complete without running tests AND the linter.
 - Do not perform the code review yourself in the same session as the build.
-  Code review happens in a fresh session — see `docs/code-review-prompt.md`.
+  Code review happens in a fresh session via `/review-backend`.
 - Do not add features that are not in the spec. If you think something is
   missing from the spec, raise it during planning.
 
@@ -66,4 +66,4 @@ partial or pre-approval work.
 - Backend spec: `specs/backend.md`
 - Frontend spec: `specs/frontend.md` (not yet written)
 - Workflow detail and examples: `docs/workflow.md`
-- Code review process: `docs/code-review-prompt.md`
+- Code review: run `/review-backend` in a fresh session
