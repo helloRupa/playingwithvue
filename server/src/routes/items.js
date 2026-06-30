@@ -1,5 +1,7 @@
 const express = require('express');
-const { getItems, addItem } = require('../state');
+const {
+  getItems, addItem, getItem, patchItem,
+} = require('../state');
 const { broadcast } = require('../websocket');
 
 const router = express.Router();
@@ -32,6 +34,26 @@ router.post('/item', (req, res) => {
     updatedAt: item.updatedAt,
   });
   return res.status(201).json(item);
+});
+
+router.patch('/item', (req, res) => {
+  const { id, name } = req.body || {};
+  if (typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ error: 'invalid name' });
+  }
+  if (!getItem(id)) {
+    return res.status(404).json({ error: 'item not found' });
+  }
+  const { item, previousName } = patchItem(id, name);
+  broadcast({
+    action: 'item_updated',
+    item_id: item.id,
+    changed: { name: item.name },
+    previous: { name: previousName },
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  });
+  return res.status(200).json(item);
 });
 
 module.exports = router;

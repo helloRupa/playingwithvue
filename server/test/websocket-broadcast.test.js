@@ -78,3 +78,37 @@ test('does not broadcast when POST validation fails', async () => {
   expect(messageReceived).toBe(false);
   client.close();
 });
+
+test('broadcasts item_updated with the correct action on successful PATCH', async () => {
+  const created = await request(app).post('/item').send({ name: 'Piston' });
+  const client = await openClient();
+  const messagePromise = nextMessage(client);
+  await request(app).patch('/item').send({ id: created.body.id, name: 'Piston v2' });
+  const message = await messagePromise;
+  expect(message.action).toBe('item_updated');
+  client.close();
+});
+
+test('item_updated payload contains item_id, changed.name, previous.name, createdAt, updatedAt (R12)', async () => {
+  const created = await request(app).post('/item').send({ name: 'Valve' });
+  const client = await openClient();
+  const messagePromise = nextMessage(client);
+  await request(app).patch('/item').send({ id: created.body.id, name: 'Valve v2' });
+  const message = await messagePromise;
+  expect(typeof message.item_id).toBe('number');
+  expect(message.changed).toEqual({ name: 'Valve v2' });
+  expect(message.previous).toEqual({ name: 'Valve' });
+  expect(typeof message.createdAt).toBe('string');
+  expect(typeof message.updatedAt).toBe('string');
+  client.close();
+});
+
+test('does not broadcast when PATCH validation fails', async () => {
+  const client = await openClient();
+  let messageReceived = false;
+  client.once('message', () => { messageReceived = true; });
+  await request(app).patch('/item').send({ id: 1, name: '' });
+  await delay(100);
+  expect(messageReceived).toBe(false);
+  client.close();
+});

@@ -38,4 +38,17 @@ function addItem(name) {
   return items[id];
 }
 
-module.exports = { getItems, addItem };
+function getItem(id) {
+  return items[id];
+}
+
+function patchItem(id, name) {
+  const previousName = items[id].name;
+  items[id].name = name;
+  items[id].updatedAt = new Date().toISOString();
+  return { item: items[id], previousName };
+}
+
+module.exports = {
+  getItems, addItem, getItem, patchItem,
+};
