@@ -13,7 +13,7 @@ describe('GET /items', () => {
     const response = await request(app).get('/items');
     const itemList = Object.values(response.body);
     expect(itemList).toHaveLength(5);
-    const names = itemList.map(item => item.name);
+    const names = itemList.map((item) => item.name);
     expect(new Set(names).size).toBe(5);
   });
 

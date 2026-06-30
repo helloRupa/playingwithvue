@@ -1,4 +1,5 @@
 {
+  "extends": "airbnb-base",
   "env": {
     "node": true,
     "es2021": true,
@@ -8,7 +9,12 @@
     "ecmaVersion": 2021
   },
   "rules": {
-    "no-unused-vars": "error",
-    "id-length": ["error", { "min": 2 }]
+    "id-length": ["error", { "min": 2 }],
+    "no-restricted-syntax": [
+      "error",
+      { "selector": "ForInStatement", "message": "Use Object.{keys,values,entries} instead." },
+      { "selector": "LabeledStatement", "message": "Labels are not allowed." },
+      { "selector": "WithStatement", "message": "with is not allowed." }
+    ]
   }
 }
