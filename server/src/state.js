@@ -25,4 +25,17 @@ function getItems(sinceMs) {
   return Object.fromEntries(filtered.map((item) => [item.id, item]));
 }
 
-module.exports = { getItems };
+function addItem(name) {
+  const now = new Date().toISOString();
+  const id = nextId;
+  nextId += 1;
+  items[id] = {
+    id,
+    name,
+    createdAt: now,
+    updatedAt: now,
+  };
+  return items[id];
+}
+
+module.exports = { getItems, addItem };

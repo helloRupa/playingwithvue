@@ -1,5 +1,6 @@
 const express = require('express');
-const { getItems } = require('../state');
+const { getItems, addItem } = require('../state');
+const { broadcast } = require('../websocket');
 
 const router = express.Router();
 
@@ -15,6 +16,22 @@ router.get('/items', (req, res) => {
   }
 
   return res.status(200).json(getItems());
+});
+
+router.post('/item', (req, res) => {
+  const { name } = req.body || {};
+  if (typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ error: 'invalid name' });
+  }
+  const item = addItem(name);
+  broadcast({
+    action: 'item_added',
+    item_id: item.id,
+    name: item.name,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  });
+  return res.status(201).json(item);
 });
 
 module.exports = router;
