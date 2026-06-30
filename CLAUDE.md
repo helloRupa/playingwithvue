@@ -4,6 +4,7 @@ This is a spec-driven development project. Follow these rules on EVERY task,
 no matter how small.
 
 ## Working directories
+
 - Backend code lives in `server/`
 - Frontend code lives in `client/`
 - Specs live in `specs/`. Treat them as the source of truth.
@@ -36,6 +37,7 @@ no matter how small.
    tests pass.
 
 ## Code style rules
+
 - **No single-character variable names.** Use descriptive words.
   `index` not `i`. `item` not `x`. `error` not `e`. Loop counters included.
   This applies to arrow function parameters too: `items.map(item => ...)`
@@ -43,7 +45,14 @@ no matter how small.
 - Prefer clarity over cleverness.
 - Match existing project style once it exists.
 
+## Commit messages
+
+Follow Conventional Commits 1.0.0 per `docs/commits.md`. Commit at the
+end of each approved slice, after tests and lint pass. Never commit
+partial or pre-approval work.
+
 ## What NOT to do
+
 - Do not skip the planning step, even for "trivial" changes.
 - Do not begin coding before I approve the plan.
 - Do not mark work complete without running tests AND the linter.
@@ -53,6 +62,7 @@ no matter how small.
   missing from the spec, raise it during planning.
 
 ## References
+
 - Backend spec: `specs/backend.md`
 - Frontend spec: `specs/frontend.md` (not yet written)
 - Workflow detail and examples: `docs/workflow.md`
