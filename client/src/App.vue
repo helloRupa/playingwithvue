@@ -1,6 +1,7 @@
 <template>
   <h1>Items</h1>
   <div v-if="isLoading">Loading...</div>
+  <div v-if="itemsCollection.utils.isError">Something went wrong!</div>
   <ul v-if="items.length > 0">
     <li v-for="item in items" :key="item.id">{{ item.id }}: {{ item.name }}</li>
   </ul>
