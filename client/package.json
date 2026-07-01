@@ -17,6 +17,8 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@tanstack/query-core": "^5.101.2",
+    "@tanstack/query-db-collection": "^1.0.45",
     "@tanstack/vue-db": "^0.0.124",
     "@tanstack/vue-query": "^5.101.2",
     "pinia": "^3.0.4",
