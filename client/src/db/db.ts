@@ -9,10 +9,12 @@ export interface Item {
   updatedAt: string
 }
 
+export const queryClient = new QueryClient()
+
 export const itemsCollection = createCollection(
   queryCollectionOptions({
     queryKey: ['items'],
-    queryClient: new QueryClient(),
+    queryClient,
     queryFn: async (): Promise<Item[]> => {
       const response = await fetch('http://localhost:8000/items')
 
