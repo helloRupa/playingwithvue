@@ -24,7 +24,34 @@ export const itemsCollection = createCollection(
         throw new Error('fetch failed')
       }
 
-      return response.json()
+      const cachedData = queryClient.getQueryData<Item[]>([QUERY_KEYS.items]) || []
+      const fetchedData = await response.json()
+
+      if (!cachedData.length || !fetchedData.length) {
+        return cachedData.length ? cachedData : fetchedData
+      }
+
+      const mergedData = [...cachedData, ...fetchedData]
+      mergedData.sort(
+        (a: Item, b: Item) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+      )
+      const itemMap = new Map()
+      let index = mergedData.length - 1
+
+      while (index > -1) {
+        const item = mergedData[index]
+        const itemInMap = itemMap.get(item.id)
+
+        if (itemInMap) {
+          mergedData.splice(index, 1)
+        } else {
+          itemInMap.set(item.id, item)
+        }
+
+        --index
+      }
+
+      return mergedData
     },
     getKey: (item: Item) => item.id,
   }),
