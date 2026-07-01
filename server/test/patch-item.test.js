@@ -19,7 +19,8 @@ describe('PATCH /item', () => {
     const created = await createItem('Before');
     await request(app).patch('/item').send({ id: created.id, name: 'After' });
     const items = await request(app).get('/items');
-    expect(items.body[created.id].name).toBe('After');
+    const updatedItem = items.body.find((item) => item.id === created.id);
+    expect(updatedItem.name).toBe('After');
   });
 
   test('refreshes updatedAt to a new timestamp', async () => {
@@ -81,6 +82,7 @@ describe('PATCH /item', () => {
     const created = await createItem('Unchanged');
     await request(app).patch('/item').send({ id: created.id, name: '' });
     const items = await request(app).get('/items');
-    expect(items.body[created.id].name).toBe('Unchanged');
+    const unchangedItem = items.body.find((item) => item.id === created.id);
+    expect(unchangedItem.name).toBe('Unchanged');
   });
 });

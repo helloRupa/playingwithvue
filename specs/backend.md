@@ -24,14 +24,15 @@ Reference these IDs in plans, commit messages, and code review.
 
 ### R6. `GET /items`
 
-- Returns the full `items` object as JSON.
+- Returns all items as a JSON **array**, sorted by `createdAt` ascending.
+  Items with identical `createdAt` are ordered by `id` ascending.
 - Status 200.
 
 ### R7. `GET /items?last_update=<ISO datetime>`
 
 - Returns only items whose `createdAt` OR `updatedAt` is **strictly after**
   the provided timestamp.
-- Returned shape matches R6 (same object shape, filtered).
+- Returned shape matches R6 (sorted array). Empty result is `[]`.
 - **R7a.** Invalid ISO datetime → respond 400 with JSON
   `{ error: "invalid last_update" }`.
 - **R7b.** Missing `last_update` parameter → behave exactly like R6.

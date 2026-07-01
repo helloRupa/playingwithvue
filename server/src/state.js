@@ -14,15 +14,22 @@ for (const name of seedNames) {
   };
 }
 
+function sortedItems(itemList) {
+  return itemList.sort((itemA, itemB) => {
+    const timeDiff = new Date(itemA.createdAt).getTime() - new Date(itemB.createdAt).getTime();
+    return timeDiff !== 0 ? timeDiff : itemA.id - itemB.id;
+  });
+}
+
 function getItems(sinceMs) {
   if (sinceMs === undefined) {
-    return items;
+    return sortedItems(Object.values(items));
   }
   const filtered = Object.values(items).filter((item) => (
     new Date(item.createdAt).getTime() > sinceMs
     || new Date(item.updatedAt).getTime() > sinceMs
   ));
-  return Object.fromEntries(filtered.map((item) => [item.id, item]));
+  return sortedItems(filtered);
 }
 
 function addItem(name) {

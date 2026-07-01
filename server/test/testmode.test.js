@@ -13,24 +13,24 @@ afterEach(() => {
 });
 
 test('does not mutate state before startTestMode is called', () => {
-  const countBefore = Object.keys(getItems()).length;
+  const countBefore = getItems().length;
   jest.advanceTimersByTime(3000);
-  expect(Object.keys(getItems()).length).toBe(countBefore);
+  expect(getItems().length).toBe(countBefore);
 });
 
 test('adds a new item after one 3-second tick when Math.random() < 0.5', () => {
   jest.spyOn(Math, 'random').mockReturnValue(0.3);
-  const countBefore = Object.keys(getItems()).length;
+  const countBefore = getItems().length;
   startTestMode();
   jest.advanceTimersByTime(3000);
-  expect(Object.keys(getItems()).length).toBe(countBefore + 1);
+  expect(getItems().length).toBe(countBefore + 1);
 });
 
 test('new item from test mode has valid id, name, createdAt, updatedAt (R15)', () => {
   jest.spyOn(Math, 'random').mockReturnValue(0.3);
   startTestMode();
   jest.advanceTimersByTime(3000);
-  const allItems = Object.values(getItems());
+  const allItems = getItems();
   const newestItem = allItems[allItems.length - 1];
   expect(typeof newestItem.id).toBe('number');
   expect(typeof newestItem.name).toBe('string');
@@ -44,23 +44,24 @@ test('modifies an existing item after one tick when Math.random() >= 0.5', () =>
   jest.spyOn(Math, 'random')
     .mockReturnValueOnce(0.7)
     .mockReturnValueOnce(0);
-  const firstItem = Object.values(getItems())[0];
+  const firstItem = getItems()[0];
   const originalName = firstItem.name;
   startTestMode();
   jest.advanceTimersByTime(3000);
-  expect(getItems()[firstItem.id].name).not.toBe(originalName);
+  const patchedItem = getItems().find((item) => item.id === firstItem.id);
+  expect(patchedItem.name).not.toBe(originalName);
 });
 
 test('modified item has refreshed updatedAt and unchanged createdAt (R15)', () => {
   jest.spyOn(Math, 'random')
     .mockReturnValueOnce(0.7)
     .mockReturnValueOnce(0);
-  const firstItem = Object.values(getItems())[0];
+  const firstItem = getItems()[0];
   const originalCreatedAt = firstItem.createdAt;
   jest.setSystemTime(new Date('2099-01-01T12:00:00.000Z'));
   startTestMode();
   jest.advanceTimersByTime(3000);
-  const patchedItem = getItems()[firstItem.id];
+  const patchedItem = getItems().find((item) => item.id === firstItem.id);
   expect(patchedItem.createdAt).toBe(originalCreatedAt);
   expect(patchedItem.updatedAt).toBe('2099-01-01T12:00:03.000Z');
 });
@@ -98,15 +99,15 @@ test('does not mutate state after stopTestMode is called (R15a)', () => {
   jest.spyOn(Math, 'random').mockReturnValue(0.3);
   startTestMode();
   stopTestMode();
-  const countAfterStop = Object.keys(getItems()).length;
+  const countAfterStop = getItems().length;
   jest.advanceTimersByTime(3000);
-  expect(Object.keys(getItems()).length).toBe(countAfterStop);
+  expect(getItems().length).toBe(countAfterStop);
 });
 
 test('fires on every 3-second tick (two ticks in 6 seconds)', () => {
   jest.spyOn(Math, 'random').mockReturnValue(0.3);
-  const countBefore = Object.keys(getItems()).length;
+  const countBefore = getItems().length;
   startTestMode();
   jest.advanceTimersByTime(6000);
-  expect(Object.keys(getItems()).length).toBe(countBefore + 2);
+  expect(getItems().length).toBe(countBefore + 2);
 });

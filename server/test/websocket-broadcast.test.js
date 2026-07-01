@@ -64,7 +64,7 @@ test('new item is visible via GET /items immediately after broadcast (R12a)', as
   await request(app).post('/item').send({ name: 'Flywheel' });
   const message = await messagePromise;
   const response = await request(app).get('/items');
-  const itemIds = Object.keys(response.body).map(Number);
+  const itemIds = response.body.map((item) => item.id);
   expect(itemIds).toContain(message.item_id);
   client.close();
 });
