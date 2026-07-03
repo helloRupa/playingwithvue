@@ -59,52 +59,25 @@ export const itemsCollection = createCollection(
 )
 itemsCollection.createIndex((row) => row.updatedAt)
 
-function addItem(old: Item[], { id, name, createdAt, updatedAt }: Item) {
-  return [
-    ...old,
-    {
-      id,
-      name,
-      createdAt,
-      updatedAt,
-    },
-  ]
-}
-
 export function addItemToCollection({ id, name, createdAt, updatedAt }: Item) {
-  queryClient.setQueryData([QUERY_KEYS.items], (old: Item[] = []) => {
-    if (old.findIndex((item: Item) => item.id === id) !== -1) {
-      return old
-    }
-
-    return addItem(old, { id, name, createdAt, updatedAt })
-  })
+  itemsCollection.utils.writeInsert({ id, name, createdAt, updatedAt })
 }
 
 export function updateItemInCollection({ id, name, createdAt, updatedAt }: Item) {
-  queryClient.setQueryData([QUERY_KEYS.items], (old: Item[] = []) => {
-    const recordIndexFound = old.findIndex((item: Item) => item.id === id)
-    if (recordIndexFound === -1) {
-      return addItem(old, {
-        id,
-        name,
-        createdAt,
-        updatedAt,
-      })
-    }
+  const record = itemsCollection.get(id)
 
-    const record: Item = old[recordIndexFound]!
+  if (!record) {
+    itemsCollection.utils.writeInsert({ id, name, createdAt, updatedAt })
+    return
+  }
 
-    if (new Date(record.updatedAt) > new Date(updatedAt)) {
-      return old
-    }
+  if (new Date(record.updatedAt) > new Date(updatedAt)) {
+    return
+  }
 
-    old[recordIndexFound] = {
-      ...record,
-      name,
-      updatedAt,
-    }
-
-    return old
+  itemsCollection.utils.writeUpsert({
+    ...record,
+    name,
+    updatedAt,
   })
 }
