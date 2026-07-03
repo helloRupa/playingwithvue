@@ -1,4 +1,4 @@
-import { createCollection } from '@tanstack/vue-db'
+import { BasicIndex, createCollection } from '@tanstack/vue-db'
 import { queryCollectionOptions } from '@tanstack/query-db-collection'
 import { QueryClient } from '@tanstack/query-core'
 import { BASE_API_URL } from '@/constants/api'
@@ -15,6 +15,7 @@ export const queryClient = new QueryClient()
 
 export const itemsCollection = createCollection(
   queryCollectionOptions({
+    defaultIndexType: BasicIndex,
     queryKey: [QUERY_KEYS.items],
     queryClient,
     queryFn: async (): Promise<Item[]> => {
@@ -56,6 +57,7 @@ export const itemsCollection = createCollection(
     getKey: (item: Item) => item.id,
   }),
 )
+itemsCollection.createIndex((row) => row.updatedAt)
 
 function addItem(old: Item[], { id, name, createdAt, updatedAt }: Item) {
   return [
