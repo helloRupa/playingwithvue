@@ -57,7 +57,6 @@ export const itemsCollection = createCollection(
     getKey: (item: Item) => item.id,
   }),
 )
-itemsCollection.createIndex((row) => row.updatedAt)
 
 export function addItemToCollection({ id, name, createdAt, updatedAt }: Item) {
   itemsCollection.utils.writeInsert({ id, name, createdAt, updatedAt })
@@ -81,3 +80,5 @@ export function updateItemInCollection({ id, name, createdAt, updatedAt }: Item)
     updatedAt,
   })
 }
+
+itemsCollection.createIndex((row) => row.updatedAt)
