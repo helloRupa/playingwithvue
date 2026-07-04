@@ -3,6 +3,7 @@ import { queryCollectionOptions } from '@tanstack/query-db-collection'
 import { QueryClient } from '@tanstack/query-core'
 import { BASE_API_URL } from '@/constants/api'
 import { QUERY_KEYS } from '@/constants/query-keys'
+import { useDataTrackerStore } from '@/stores/dataTracker'
 
 export interface Item {
   id: number
@@ -19,7 +20,11 @@ export const itemsCollection = createCollection(
     queryKey: [QUERY_KEYS.items],
     queryClient,
     queryFn: async (): Promise<Item[]> => {
-      const response = await fetch(BASE_API_URL)
+      const dataTrackerStore = useDataTrackerStore()
+      const fetchURL = dataTrackerStore.lastUpdatedRecordDate
+        ? `${BASE_API_URL}?last_update=${dataTrackerStore.lastUpdatedRecordDate}`
+        : BASE_API_URL
+      const response = await fetch(fetchURL)
 
       if (!response.ok) {
         throw new Error('fetch failed')
@@ -78,6 +83,12 @@ export function updateItemInCollection({ id, name, createdAt, updatedAt }: Item)
     ...record,
     name,
     updatedAt,
+  })
+}
+
+export function fetchMissedUpdates() {
+  itemsCollection.utils.refetch().catch((error) => {
+    console.error('Failed to fetch missed updates: ', error)
   })
 }
 

@@ -1,5 +1,5 @@
 import { WEBSOCKETS_URL } from '@/constants/api'
-import { addItemToCollection, updateItemInCollection } from './db'
+import { addItemToCollection, fetchMissedUpdates, updateItemInCollection } from './db'
 import { useStatusStore } from '@/stores/statusStore'
 
 interface ItemAddedMessage {
@@ -40,6 +40,7 @@ function heartbeat() {
     }
 
     ++pingsInProcess
+    // TODO: if pings > 1, add middle status and statusStore changes from boolean to string
     ws.send(JSON.stringify({ action: 'ping' }))
   }, 10_000)
 }
@@ -52,6 +53,10 @@ ws.onopen = () => {
   heartbeat()
 }
 ws.onmessage = (event: MessageEvent) => {
+  if (shouldSkipWSChanges()) {
+    return
+  }
+
   const message: ItemAddedMessage | ItemUpdatedMessage | Pong = JSON.parse(event.data)
   console.log('Received:', message)
 
@@ -71,8 +76,8 @@ ws.onmessage = (event: MessageEvent) => {
       updateItemInCollection({ id, name: changed.name, createdAt, updatedAt })
       break
     case 'pong':
-      if (sessionStorage.getItem('disablePongs') === '1') {
-        return
+      if (pingsInProcess > 1) {
+        fetchMissedUpdates()
       }
 
       pingsInProcess = 0
@@ -85,4 +90,8 @@ ws.onclose = () => {
   console.log('Disconnected')
   const statusStore = useStatusStore()
   statusStore.setIsConnected(false)
+}
+
+function shouldSkipWSChanges() {
+  return sessionStorage.getItem('disablePongs') === '1'
 }
