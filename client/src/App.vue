@@ -1,4 +1,8 @@
 <template>
+  <div>
+    <span class="status" :class="statusCircleClass"></span
+    >{{ statusStore.isConnected ? 'Connected' : 'Disconnected' }}
+  </div>
   <h1>Items</h1>
   <div v-if="isLoading">Loading...</div>
   <div v-if="itemsCollection.utils.isError">Something went wrong!</div>
@@ -10,9 +14,10 @@
 <script setup lang="ts">
 import { useLiveQuery } from '@tanstack/vue-db'
 import { itemsCollection } from './db/db'
-import { ws } from './db/ws'
-import { onUnmounted } from 'vue'
+import { closeWebSocket } from './db/ws'
+import { computed, onUnmounted } from 'vue'
 import { useDataTrackerStore } from './stores/dataTracker'
+import { useStatusStore } from './stores/statusStore'
 
 const { data: items, isLoading } = useLiveQuery((q) =>
   q.from({ item: itemsCollection }).select(({ item }) => ({
@@ -24,7 +29,6 @@ const { data: items, isLoading } = useLiveQuery((q) =>
 )
 
 const dataTrackerStore = useDataTrackerStore()
-
 const itemsCollectionCleanup = itemsCollection.subscribeChanges(
   (changes) => {
     changes.forEach((change) => {
@@ -40,10 +44,30 @@ const itemsCollectionCleanup = itemsCollection.subscribeChanges(
   { includeInitialState: true },
 )
 
+const statusStore = useStatusStore()
+const statusCircleClass = computed(() => (statusStore.isConnected ? 'connected' : 'disconnected'))
+
 onUnmounted(() => {
   itemsCollectionCleanup.unsubscribe()
-  ws.close()
+  closeWebSocket()
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.status {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: yellow;
+  margin-right: 5px;
+
+  &.connected {
+    background-color: green;
+  }
+
+  &.disconnected {
+    background-color: red;
+  }
+}
+</style>

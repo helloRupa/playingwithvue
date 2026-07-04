@@ -1,5 +1,6 @@
 import { WEBSOCKETS_URL } from '@/constants/api'
 import { addItemToCollection, updateItemInCollection } from './db'
+import { useStatusStore } from '@/stores/statusStore'
 
 interface ItemAddedMessage {
   action: 'item_added'
@@ -18,14 +19,49 @@ interface ItemUpdatedMessage {
   previous: { name: string }
 }
 
-export const ws = new WebSocket(WEBSOCKETS_URL)
-ws.onopen = () => console.log('Connected')
-ws.onmessage = (event) => {
-  const message: ItemAddedMessage | ItemUpdatedMessage = JSON.parse(event.data)
+interface Pong {
+  action: 'pong'
+}
+
+const ws = new WebSocket(WEBSOCKETS_URL)
+
+export function closeWebSocket() {
+  ws.close()
+}
+
+let pingsInProcess = 0
+let heartbeatInterval: number | undefined
+function heartbeat() {
+  heartbeatInterval = setInterval(() => {
+    if (pingsInProcess >= 3) {
+      clearInterval(heartbeatInterval)
+      closeWebSocket()
+      return
+    }
+
+    ++pingsInProcess
+    ws.send(JSON.stringify({ action: 'ping' }))
+  }, 10_000)
+}
+
+ws.onopen = () => {
+  console.log('WebSocket Connected')
+  const statusStore = useStatusStore()
+  statusStore.setIsConnected(true)
+  pingsInProcess = 0
+  heartbeat()
+}
+ws.onmessage = (event: MessageEvent) => {
+  const message: ItemAddedMessage | ItemUpdatedMessage | Pong = JSON.parse(event.data)
   console.log('Received:', message)
 
-  const { item_id: id, createdAt, updatedAt } = message
-  switch (message.action) {
+  const { action } = message
+  const {
+    item_id: id,
+    createdAt,
+    updatedAt,
+  } = message as Partial<ItemAddedMessage & ItemUpdatedMessage>
+  switch (action) {
     case 'item_added':
       const { name } = message
       addItemToCollection({ id, name, createdAt, updatedAt })
@@ -34,7 +70,19 @@ ws.onmessage = (event) => {
       const { changed } = message
       updateItemInCollection({ id, name: changed.name, createdAt, updatedAt })
       break
+    case 'pong':
+      if (sessionStorage.getItem('disablePongs') === '1') {
+        return
+      }
+
+      pingsInProcess = 0
+      break
   }
 }
-ws.onerror = (error) => console.error('Error:', error)
-ws.onclose = () => console.log('Disconnected')
+ws.onerror = (error: Event) => console.error('Error:', error)
+ws.onclose = () => {
+  clearInterval(heartbeatInterval)
+  console.log('Disconnected')
+  const statusStore = useStatusStore()
+  statusStore.setIsConnected(false)
+}
