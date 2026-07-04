@@ -46,7 +46,7 @@ export const itemsCollection = createCollection(
         if (itemInMap) {
           mergedData.splice(index, 1)
         } else {
-          itemInMap.set(item.id, item)
+          itemMap.set(item.id, item)
         }
 
         --index
