@@ -1,15 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useStatusStore = defineStore('statusStore', () => {
-  const isConnected = ref<boolean>(false)
+export enum STATES {
+  CONNECTED = 'Connected',
+  UNSTABLE = 'Unstable',
+  DISCONNECTED = 'Disconnected',
+}
 
-  function setIsConnected(status: boolean) {
-    isConnected.value = status
+export const useStatusStore = defineStore('statusStore', () => {
+  const networkStatus = ref<STATES>(STATES.DISCONNECTED)
+
+  function setIsConnected(status: STATES) {
+    networkStatus.value = status
   }
 
   return {
-    isConnected,
+    networkStatus,
     setIsConnected,
   }
 })

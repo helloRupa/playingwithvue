@@ -1,7 +1,7 @@
 <template>
   <div>
-    <span class="status" :class="statusCircleClass"></span
-    >{{ statusStore.isConnected ? 'Connected' : 'Disconnected' }}
+    <span class="status" :class="statusStore.networkStatus.toLowerCase()"></span>
+    {{ statusStore.networkStatus }}
   </div>
   <h1>Items</h1>
   <div v-if="isLoading">Loading...</div>
@@ -15,7 +15,7 @@
 import { useLiveQuery } from '@tanstack/vue-db'
 import { itemsCollection } from './db/db'
 import { closeWebSocket } from './db/ws'
-import { computed, onUnmounted } from 'vue'
+import { onUnmounted } from 'vue'
 import { useDataTrackerStore } from './stores/dataTracker'
 import { useStatusStore } from './stores/statusStore'
 
@@ -45,7 +45,6 @@ const itemsCollectionCleanup = itemsCollection.subscribeChanges(
 )
 
 const statusStore = useStatusStore()
-const statusCircleClass = computed(() => (statusStore.isConnected ? 'connected' : 'disconnected'))
 
 onUnmounted(() => {
   itemsCollectionCleanup.unsubscribe()
@@ -64,6 +63,10 @@ onUnmounted(() => {
 
   &.connected {
     background-color: green;
+  }
+
+  &.unstable {
+    background-color: orange;
   }
 
   &.disconnected {

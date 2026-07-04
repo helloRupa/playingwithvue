@@ -1,6 +1,6 @@
 import { WEBSOCKETS_URL } from '@/constants/api'
 import { addItemToCollection, fetchMissedUpdates, updateItemInCollection } from './db'
-import { useStatusStore } from '@/stores/statusStore'
+import { STATES, useStatusStore } from '@/stores/statusStore'
 
 interface ItemAddedMessage {
   action: 'item_added'
@@ -40,7 +40,12 @@ function heartbeat() {
     }
 
     ++pingsInProcess
-    // TODO: if pings > 1, add middle status and statusStore changes from boolean to string
+
+    if (pingsInProcess > 1) {
+      const statusStore = useStatusStore()
+      statusStore.setIsConnected(STATES.UNSTABLE)
+    }
+
     ws.send(JSON.stringify({ action: 'ping' }))
   }, 10_000)
 }
@@ -48,7 +53,7 @@ function heartbeat() {
 ws.onopen = () => {
   console.log('WebSocket Connected')
   const statusStore = useStatusStore()
-  statusStore.setIsConnected(true)
+  statusStore.setIsConnected(STATES.CONNECTED)
   pingsInProcess = 0
   heartbeat()
 }
@@ -81,6 +86,8 @@ ws.onmessage = (event: MessageEvent) => {
       }
 
       pingsInProcess = 0
+      const statusStore = useStatusStore()
+      statusStore.setIsConnected(STATES.CONNECTED)
       break
   }
 }
@@ -89,7 +96,7 @@ ws.onclose = () => {
   clearInterval(heartbeatInterval)
   console.log('Disconnected')
   const statusStore = useStatusStore()
-  statusStore.setIsConnected(false)
+  statusStore.setIsConnected(STATES.DISCONNECTED)
 }
 
 function shouldSkipWSChanges() {
