@@ -76,6 +76,11 @@ Reference these IDs in plans, commit messages, and code review.
 - **R12a.** Broadcasts MUST occur after state is updated, not before.
   A client receiving a broadcast and immediately calling `GET /items` must
   see the change reflected.
+- **R12b.** On receiving a message from a client that is valid JSON of the
+  shape `{ "action": "ping" }`, the server responds to that same client
+  only (not broadcast to other clients) with `{ "action": "pong" }`.
+- **R12c.** Messages that are not valid JSON, or valid JSON without
+  `action === "ping"`, are ignored: no response, no error, no crash.
 
 ## Test mode
 
