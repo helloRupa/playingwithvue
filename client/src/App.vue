@@ -17,7 +17,6 @@ import { useLiveQuery } from '@tanstack/vue-db'
 import { itemsCollection } from './db/db'
 import { socketConnection } from './db/ws'
 import { onUnmounted } from 'vue'
-import { useDataTrackerStore } from './stores/dataTracker'
 import { useStatusStore } from './stores/statusStore'
 
 const { data: items, isLoading } = useLiveQuery((q) =>
@@ -29,26 +28,9 @@ const { data: items, isLoading } = useLiveQuery((q) =>
   })),
 )
 
-const dataTrackerStore = useDataTrackerStore()
-const itemsCollectionCleanup = itemsCollection.subscribeChanges(
-  (changes) => {
-    changes.forEach((change) => {
-      if (
-        !dataTrackerStore.lastUpdatedRecordDate ||
-        new Date(change.value.updatedAt).getTime() >
-          new Date(dataTrackerStore.lastUpdatedRecordDate).getTime()
-      ) {
-        dataTrackerStore.setLastUpdatedRecordDate(change.value.updatedAt)
-      }
-    })
-  },
-  { includeInitialState: true },
-)
-
 const statusStore = useStatusStore()
 
 onUnmounted(() => {
-  itemsCollectionCleanup.unsubscribe()
   socketConnection.close()
 })
 </script>
