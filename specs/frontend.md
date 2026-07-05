@@ -24,14 +24,13 @@ error states, etc.) predates this spec and is not yet documented here.
 ## Gap-fill sync on reconnect
 
 - **R5.** On a successful *reconnect* (not the initial connection), the
-  client fetches items updated since the last known state via
-  `GET /items?last_update=<lastUpdatedRecordDate>` (backend R7).
-  - **R5a.** If no `lastUpdatedRecordDate` is recorded yet, the client falls
-    back to an unfiltered `GET /items` (backend R7b).
-  - **R5b.** Each item returned is merged into the local collection via the
+  client fetches the complete item set via an unfiltered `GET /items`
+  (backend R6), rather than a filtered delta fetch, so that no update is
+  missed regardless of when or how long the connection was degraded.
+  - **R5a.** Each item returned is merged into the local collection via the
     existing insert-or-update-if-newer logic (`updateItemInCollection`),
     consistent with how live WebSocket messages are merged.
-  - **R5c.** If the gap-fill fetch fails, the client retries it with capped
+  - **R5b.** If the gap-fill fetch fails, the client retries it with capped
     exponential backoff, independent of the socket-level reconnect backoff.
 - **R6.** The initial connection (first mount) does NOT trigger a gap-fill
   fetch — that data comes from `itemsCollection`'s own initial query.
