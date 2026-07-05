@@ -1,7 +1,7 @@
 import { BasicIndex, createCollection } from '@tanstack/vue-db'
 import { queryCollectionOptions } from '@tanstack/query-db-collection'
 import { QueryClient } from '@tanstack/query-core'
-import { BASE_API_URL } from '@/constants/api'
+import { BASE_API_URL, POST_PATCH_API_URL } from '@/constants/api'
 import { QUERY_KEYS } from '@/constants/query-keys'
 
 export interface Item {
@@ -44,6 +44,41 @@ export const itemsCollection = createCollection(
       }))
     },
     getKey: (item: Item) => item.id,
+    onUpdate: async ({ transaction }) => {
+      const { id, name } = transaction.mutations[0].modified
+
+      const response = await fetch(POST_PATCH_API_URL, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name }),
+      })
+
+      if (!response.ok) {
+        throw new Error('patch failed')
+      }
+
+      const { name: confirmedName, createdAt, updatedAt } = await response.json()
+      updateItemInCollection({ id, name: confirmedName, createdAt, updatedAt })
+    },
+    onInsert: async ({ transaction }) => {
+      const { name: temporaryName } = transaction.mutations[0].modified
+
+      const response = await fetch(POST_PATCH_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: temporaryName }),
+      })
+
+      if (!response.ok) {
+        throw new Error('post failed')
+      }
+
+      const { id, name, createdAt, updatedAt } = await response.json()
+
+      addItemToCollection({ id, name, createdAt, updatedAt })
+
+      return { refetch: false }
+    },
   }),
 )
 
