@@ -2,6 +2,7 @@
   <div>
     <span class="status" :class="statusStore.networkStatus.toLowerCase()"></span>
     {{ statusStore.networkStatus }}
+    <span v-if="statusStore.isReconnecting" class="blink">Reconnecting</span>
   </div>
   <h1>Items</h1>
   <div v-if="isLoading">Loading...</div>
@@ -14,7 +15,7 @@
 <script setup lang="ts">
 import { useLiveQuery } from '@tanstack/vue-db'
 import { itemsCollection } from './db/db'
-import { closeWebSocket } from './db/ws'
+import { socketConnection } from './db/ws'
 import { onUnmounted } from 'vue'
 import { useDataTrackerStore } from './stores/dataTracker'
 import { useStatusStore } from './stores/statusStore'
@@ -48,7 +49,7 @@ const statusStore = useStatusStore()
 
 onUnmounted(() => {
   itemsCollectionCleanup.unsubscribe()
-  closeWebSocket()
+  socketConnection.close()
 })
 </script>
 
@@ -71,6 +72,16 @@ onUnmounted(() => {
 
   &.disconnected {
     background-color: red;
+  }
+}
+
+.blink {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
   }
 }
 </style>
